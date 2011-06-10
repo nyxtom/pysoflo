@@ -282,6 +282,6 @@ These things and more!
 
 This presentation has a some source online:
 
-* http://github.com/miamiwebstaff/pysoflo
+* http://github.com/nyxtom/pysoflo
 * http://github.com/nyxtom/
 * http://github.com/nyxtom/saywhat
