@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<!--
+  Copyright 2010 Google Inc.
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+
+  Original slides: Marcin Wichary (mwichary@google.com)
+  Modifications: Ernest Delgado (ernestd@google.com)
+                 Alex Russell (slightlyoff@chromium.org)
+
+  landslide modifications: Adam Zapletal (adamzap@gmail.com)
+                           Nicolas Perriault (nperriault@gmail.com)
+-->
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>None</title>
+    <!-- Styles -->
+    
+    <link rel="stylesheet" media="print" href="file:///Users/majortom/.virtualenvs/pysoflo/lib/python2.6/site-packages/landslide/themes/default/css/print.css">
+    <link rel="stylesheet" media="screen, projection" href="file:///Users/majortom/.virtualenvs/pysoflo/lib/python2.6/site-packages/landslide/themes/default/css/screen.css">
+    
+    <!-- /Styles -->
+    <!-- Javascripts -->
+    
+    <script type="text/javascript" src="file:///Users/majortom/.virtualenvs/pysoflo/lib/python2.6/site-packages/landslide/themes/default/js/slides.js"></script>
+    
+    <!-- /Javascripts -->
+</head>
+<body>
+  <div class="presentation">
+    <div class="slides">
+      
+      <!-- slide source: slides.md -->
+      <div class="slide">
+        <div class="inner">
+          
+          
+          <section><p><img src="file:///Users/majortom/pysoflo/jun.10.2011-doitlive/python.png" />
+Introduction to Redis, Socket.io, Gevent and Django</p>
+<h6 />
+<pre><code>Presented by: Thomas Holloway
+
+Hosted by Nextown Technologies
+235 Lincoln Road, Miami Beach, FL
+</code></pre></section>
+          
+        </div>
+        <footer>
+          
+          <aside class="source">
+            Source: <a href="file:///Users/majortom/pysoflo/jun.10.2011-doitlive/slides.md">slides.md</a>
+          </aside>
+          
+          <aside class="page_number">
+            1/20
+          </aside>
+        </footer>
+      </div>
+      
+      <!-- slide source: slides.md -->
+      <div class="slide">
+        <div class="inner">
+          
+          <header><h1>Do it live!</h1></header>
+          
+          
+          <section><iframe width="750" height="550" src="http://www.youtube.com/embed/5j2YDq6FkVE" frameborder="0" allowfullscreen></iframe></section>
+          
+        </div>
+        <footer>
+          
+          <aside class="source">
+            Source: <a href="file:///Users/majortom/pysoflo/jun.10.2011-doitlive/slides.md">slides.md</a>
+          </aside>
+          
+          <aside class="page_number">
+            2/20
+          </aside>
+        </footer>
+      </div>
+      
+      <!-- slide source: slides.md -->
+      <div class="slide has_notes">
+        <div class="inner">
+          
+          <header><h1>Why sites should be live?</h1></header>
+          
+          
+          <section><p class="notes">More like a game, users will ultimately spend more time on the website as new stuff comes in (A.D.D. awesome!)</p>
+<ul>
+<li>Quicker feedback</li>
+<li>More informed users</li>
+<li>More engaging experience</li>
+<li>More return on investment</li>
+<li>It's fun development!</li>
+</ul></section>
+          
+        </div>
+        <footer>
+          
+          <aside class="source">
+            Source: <a href="file:///Users/majortom/pysoflo/jun.10.2011-doitlive/slides.md">slides.md</a>
+          </aside>
+          
+          <aside class="page_number">
+            3/20
+          </aside>
+        </footer>
+      </div>
+      
+      <!-- slide source: slides.md -->
+      <div class="slide">
+        <div class="inner">
+          
+          <header><h1>Issues to run into</h1></header>
+          
+          
+          <section><ul>
+<li>The web is stateless (typically)</li>
+<li>Managing sessions</li>
+<li>Connection timeouts</li>
+<li>Concurrency (<strong>yay!</strong>)</li>
+<li>Persistence</li>
+<li>Things can come out of order</li>
+<li>People do run older browsers (thx IE, thx)</li>
+<li>Mo' queries, mo' problems</li>
+</ul></section>
+          
+        </div>
+        <footer>
+          
+          <aside class="source">
+            Source: <a href="file:///Users/majortom/pysoflo/jun.10.2011-doitlive/slides.md">slides.md</a>
+          </aside>
+          
+          <aside class="page_number">
+            4/20
+          </aside>
+        </footer>
+      </div>
+      
+      <!-- slide source: slides.md -->
+      <div class="slide">
+        <div class="inner">
+          
+          <header><h1>Messaging patterns</h1></header>
+          
+          
+          <section><p><strong>Note: We've always had client/server technologies that can communicate
+in this fashion. Leveraging this on the web is fairly similar.</strong></p>
+<ul>
+<li>Request-reply: <code>connects a set of clients to a set of services. - rpc, task distribution pattern</code></li>
+<li>Publish/Subscribe: <code>connects a set of publishers to a set of subscribers. - data distribution pattern.</code></li>
+<li>Push-pull: <code>connects nodes in a fan-out / fan-in pattern that can have multiple steps and loops - parallel task distribution, collection pattern.</code></li>
+<li>Exclusive pair: <code>connects two sockets in an exclusive pair. - low-level pattern for specific use.</code></li>
+</ul></section>
+          
+        </div>
+        <footer>
+          
+          <aside class="source">
+            Source: <a href="file:///Users/majortom/pysoflo/jun.10.2011-doitlive/slides.md">slides.md</a>
+          </aside>
+          
+          <aside class="page_number">
+            5/20
+          </aside>
+        </footer>
+      </div>
+      
+      <!-- slide source: slides.md -->
+      <div class="slide">
+        <div class="inner">
+          
+          
+          <section><iframe style="margin-top: -130px; margin-left: 40px;" src="http://www.slideshare.net/slideshow/embed_code/2563177" 
+width="725" height="655" frameborder="0" marginwidth="0" marginheight="0" scrolling="no"></iframe></section>
+          
+        </div>
+        <footer>
+          
+          <aside class="source">
+            Source: <a href="file:///Users/majortom/pysoflo/jun.10.2011-doitlive/slides.md">slides.md</a>
+          </aside>
+          
+          <aside class="page_number">
+            6/20
+          </aside>
+        </footer>
+      </div>
+      
+      <!-- slide source: slides.md -->
+      <div class="slide">
+        <div class="inner">
+          
+          <header><h1>Redis.io</h1></header>
+          
+          
+          <section><p>Described as: <code>an open source, advanced key-value store. Often referred
+to as a data structure server since keys can contain strings, hashes,
+lists, sets and sorted sets.</code></p>
+<p>Data Structures:
+http://redis.io/topics/data-types</p></section>
+          
+        </div>
+        <footer>
+          
+          <aside class="source">
+            Source: <a href="file:///Users/majortom/pysoflo/jun.10.2011-doitlive/slides.md">slides.md</a>
+          </aside>
+          
+          <aside class="page_number">
+            7/20
+          </aside>
+        </footer>
+      </div>
+      
+      <!-- slide source: slides.md -->
+      <div class="slide">
+        <div class="inner">
+          
+          <header><h1>Redis.io String Data Structure</h1></header>
+          
+          
+          <section><ul>
+<li><strong>Strings</strong>: most basic, binary safe, max 512 MB in length</li>
+<li>Use strings as atomic counters: INCR, DECR, INCRBY</li>
+<li>Append to strings with APPEND</li>
+<li>Use strings to access vectors with GETRANGE, SETRANGE</li>
+<li>Encode a lot of data in little space, or create a Redis backed Bloom
+    Filter (GETBIT and SETBIT)<ul>
+<li>http://en.wikipedia.org/wiki/Bloom_filter</li>
+</ul>
+</li>
+</ul></section>
+          
+        </div>
+        <footer>
+          
+          <aside class="source">
+            Source: <a href="file:///Users/majortom/pysoflo/jun.10.2011-doitlive/slides.md">slides.md</a>
+          </aside>
+          
+          <aside class="page_number">
+            8/20
+          </aside>
+        </footer>
+      </div>
+      
+      <!-- slide source: slides.md -->
+      <div class="slide has_notes">
+        <div class="inner">
+          
+          <header><h1>Redis.io Hashes</h1></header>
+          
+          
+          <section><p class="notes">(few 100, store millions of objects in small instance, 2^(32-1) field-value pairs)</p>
+<ul>
+<li><strong>Hashes</strong>: maps between string field and string value<ul>
+<li>Perfect data type to represent objects<ul>
+<li>Ex: users with a number of fields like name, surname..etc</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul></section>
+          
+        </div>
+        <footer>
+          
+          <aside class="source">
+            Source: <a href="file:///Users/majortom/pysoflo/jun.10.2011-doitlive/slides.md">slides.md</a>
+          </aside>
+          
+          <aside class="page_number">
+            9/20
+          </aside>
+        </footer>
+      </div>
+      
+      <!-- slide source: slides.md -->
+      <div class="slide">
+        <div class="inner">
+          
+          <header><h1>Commands for Redis.io Hashes</h1></header>
+          
+          
+          <section><ul>
+<li>HDEL <code>key field</code>: delete a hash field</li>
+<li>HEXISTS <code>key field</code>: does it exist?</li>
+<li>HGET <code>key field</code>: get a value of a hash field</li>
+<li>HGETALL <code>key</code>: get all the field and values of a hash</li>
+<li>HINCRBY <code>key field increment</code>: increment integer value of hash field by given number</li>
+<li>HKEYS <code>key</code>: get all the fields of a hash</li>
+<li>HLEN <code>key</code>: number of fields</li>
+<li>HMGET <code>key field [field ...]</code>: get values of all given hash fields</li>
+<li>HMSET <code>key field value [field value ...]</code>: set multiple hash-field values</li>
+<li>HMSETNX <code>key field value</code>: set value of a hash field (only if !exists)</li>
+<li>HVALS <code>key</code>: get all the values</li>
+</ul></section>
+          
+        </div>
+        <footer>
+          
+          <aside class="source">
+            Source: <a href="file:///Users/majortom/pysoflo/jun.10.2011-doitlive/slides.md">slides.md</a>
+          </aside>
+          
+          <aside class="page_number">
+            10/20
+          </aside>
+        </footer>
+      </div>
+      
+      <!-- slide source: slides.md -->
+      <div class="slide">
+        <div class="inner">
+          
+          <header><h1><img alt="redis" src="redis.png" /></h1></header>
+          
+          
+          <section><iframe src="http://try.redis-db.com/" width="860" height="580"
+frameborder="0" marginwidth="0" marginheight="0" scrolling="no"></iframe></section>
+          
+        </div>
+        <footer>
+          
+          <aside class="source">
+            Source: <a href="file:///Users/majortom/pysoflo/jun.10.2011-doitlive/slides.md">slides.md</a>
+          </aside>
+          
+          <aside class="page_number">
+            11/20
+          </aside>
+        </footer>
+      </div>
+      
+      <!-- slide source: slides.md -->
+      <div class="slide has_code">
+        <div class="inner">
+          
+          <header><h1>Publish/Subscribe with Redis</h1></header>
+          
+          
+          <section><div class="highlight"><pre><span class="lineno"> 1</span> <span class="kn">from</span> <span class="nn">redis</span> <span class="kn">import</span> <span class="n">Redis</span>
+<span class="lineno"> 2</span> <span class="kn">from</span> <span class="nn">gevent.greenlet</span> <span class="kn">import</span> <span class="n">Greenlet</span>
+<span class="lineno"> 3</span> <span class="kn">from</span> <span class="nn">django.http</span> <span class="kn">import</span> <span class="n">HttpResponse</span>
+<span class="lineno"> 4</span> 
+<span class="lineno"> 5</span> <span class="k">def</span> <span class="nf">listener</span><span class="p">(</span><span class="n">socketio</span><span class="p">):</span>
+<span class="lineno"> 6</span>     <span class="n">red</span> <span class="o">=</span> <span class="n">Redis</span><span class="p">(</span><span class="s">&#39;localhost&#39;</span><span class="p">)</span>
+<span class="lineno"> 7</span>     <span class="n">pubsub</span> <span class="o">=</span> <span class="n">red</span><span class="o">.</span><span class="n">pubsub</span><span class="p">()</span>
+<span class="lineno"> 8</span>     <span class="n">pubsub</span><span class="o">.</span><span class="n">subscribe</span><span class="p">(</span><span class="s">&#39;users-online&#39;</span><span class="p">)</span>
+<span class="lineno"> 9</span>     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">pubsub</span><span class="o">.</span><span class="n">listen</span><span class="p">():</span>
+<span class="lineno">10</span>         <span class="n">socketio</span><span class="o">.</span><span class="n">send</span><span class="p">({</span><span class="s">&#39;message&#39;</span><span class="p">:</span> <span class="n">i</span><span class="p">})</span>
+<span class="lineno">11</span> 
+<span class="lineno">12</span> <span class="k">def</span> <span class="nf">socketio</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+<span class="lineno">13</span>     <span class="n">socketio</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s">&#39;socketio&#39;</span><span class="p">]</span>
+<span class="lineno">14</span>     <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+<span class="lineno">15</span>         <span class="n">message</span> <span class="o">=</span> <span class="n">socketio</span><span class="o">.</span><span class="n">recv</span><span class="p">()</span>
+<span class="lineno">16</span>         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">message</span><span class="p">)</span> <span class="ow">and</span> <span class="n">message</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;subscribe-me!&#39;</span><span class="p">:</span>
+<span class="lineno">17</span>             <span class="n">g</span> <span class="o">=</span> <span class="n">Greenlet</span><span class="o">.</span><span class="n">spawn</span><span class="p">(</span><span class="n">listener</span><span class="p">,</span> <span class="n">socketio</span><span class="p">)</span>
+<span class="lineno">18</span> 
+<span class="lineno">19</span>     <span class="k">return</span> <span class="n">HttpResponse</span><span class="p">()</span>
+<span class="lineno">20</span> 
+<span class="lineno">21</span> <span class="k">def</span> <span class="nf">send_message</span><span class="p">(</span><span class="n">json_data</span><span class="p">):</span>
+<span class="lineno">22</span>     <span class="n">red</span> <span class="o">=</span> <span class="n">Redis</span><span class="p">(</span><span class="s">&#39;localhost&#39;</span><span class="p">)</span>
+<span class="lineno">23</span>     <span class="n">red</span><span class="o">.</span><span class="n">publish</span><span class="p">(</span><span class="s">&#39;users-online&#39;</span><span class="p">,</span> <span class="n">json_data</span><span class="p">)</span>
+</pre></div>
+</section>
+          
+        </div>
+        <footer>
+          
+          <aside class="source">
+            Source: <a href="file:///Users/majortom/pysoflo/jun.10.2011-doitlive/slides.md">slides.md</a>
+          </aside>
+          
+          <aside class="page_number">
+            12/20
+          </aside>
+        </footer>
+      </div>
+      
+      <!-- slide source: slides.md -->
+      <div class="slide">
+        <div class="inner">
+          
+          <header><h1>Greenlets &amp; GEvent</h1></header>
+          
+          
+          <section><p>gevent is a Python networking library that uses <strong>greenlet</strong> to provide an
+async API on top of <strong>libevent</strong> event loop.</p>
+<ul>
+<li>Fast event loop based on libevent (epoll on Linux, kqueue on FreeBSD)</li>
+<li>Lightweight execution units based on greenlet</li>
+<li>Cooperative socket and ssl modules</li>
+<li>Ability to use standard library and 3rd party modules written for
+  standard blocking sockets (gevent.monkey)</li>
+<li>DNS queries performed through libevent-dns</li>
+<li>Fast WSGI server based on libevent-http</li>
+</ul>
+<p><strong>libevent</strong>: API that provides a mechanism to execute a callback function
+when a specific event occurs on a file descriptor or after a timeout has
+been reached. Supports callbacks due to signals or regular timeouts. Meant
+to replace the event loop found in event-driven network servers.</p></section>
+          
+        </div>
+        <footer>
+          
+          <aside class="source">
+            Source: <a href="file:///Users/majortom/pysoflo/jun.10.2011-doitlive/slides.md">slides.md</a>
+          </aside>
+          
+          <aside class="page_number">
+            13/20
+          </aside>
+        </footer>
+      </div>
+      
+      <!-- slide source: slides.md -->
+      <div class="slide has_notes">
+        <div class="inner">
+          
+          <header><h1>Web sockets!!</h1></header>
+          
+          
+          <section><p class="notes">remember how excited you were when you heard about websockets?</p>
+<p><img src="file:///Users/majortom/pysoflo/jun.10.2011-doitlive/koolaid.jpg" />
+<ul>
+<li>Case in point... shit breaks for people who don't have it supported</li>
+</ul></section>
+          
+        </div>
+        <footer>
+          
+          <aside class="source">
+            Source: <a href="file:///Users/majortom/pysoflo/jun.10.2011-doitlive/slides.md">slides.md</a>
+          </aside>
+          
+          <aside class="page_number">
+            14/20
+          </aside>
+        </footer>
+      </div>
+      
+      <!-- slide source: slides.md -->
+      <div class="slide has_notes">
+        <div class="inner">
+          
+          <header><h1>Socket.io</h1></header>
+          
+          
+          <section><p class="notes">awesome callback support for heartbeats, progressive retries..etc</p>
+<ul>
+<li>Supports cross-domain connections (on every browser)</li>
+<li>In order to support real-time connectivity on every browser, socket.io
+  selects the most capable transport at runtime.<ul>
+<li>WebSocket</li>
+<li>Adobe Flash Socket</li>
+<li>AJAX long polling</li>
+<li>AJAX multipart streaming</li>
+<li>Forever Iframe</li>
+<li>JSONP Polling</li>
+</ul>
+</li>
+</ul></section>
+          
+        </div>
+        <footer>
+          
+          <aside class="source">
+            Source: <a href="file:///Users/majortom/pysoflo/jun.10.2011-doitlive/slides.md">slides.md</a>
+          </aside>
+          
+          <aside class="page_number">
+            15/20
+          </aside>
+        </footer>
+      </div>
+      
+      <!-- slide source: slides.md -->
+      <div class="slide">
+        <div class="inner">
+          
+          <header><h1>Socket.io Browsers</h1></header>
+          
+          
+          <section><ul>
+<li>Supported browsers<ul>
+<li>IE 5.5+</li>
+<li>Safari 3+</li>
+<li>Google Chrome 4+</li>
+<li>Firefox 3+</li>
+<li>Opera 10.61</li>
+<li><strong>Mobile</strong>: IPhone Safari, IPad Safari, Android WebKit, WebOs WebKit</li>
+</ul>
+</li>
+</ul></section>
+          
+        </div>
+        <footer>
+          
+          <aside class="source">
+            Source: <a href="file:///Users/majortom/pysoflo/jun.10.2011-doitlive/slides.md">slides.md</a>
+          </aside>
+          
+          <aside class="page_number">
+            16/20
+          </aside>
+        </footer>
+      </div>
+      
+      <!-- slide source: slides.md -->
+      <div class="slide has_code">
+        <div class="inner">
+          
+          <header><h1>Socket.io WSGI Server</h1></header>
+          
+          
+          <section><div class="highlight"><pre><span class="lineno"> 1</span> <span class="c">#!/usr/bin/env python</span>
+<span class="lineno"> 2</span> <span class="c"># -*- coding: utf-8 -*-</span>
+<span class="lineno"> 3</span> 
+<span class="lineno"> 4</span> <span class="c"># Be sure to pip install redis, gevent, gevent-websocket, gevent-socketio</span>
+<span class="lineno"> 5</span> <span class="kn">from</span> <span class="nn">gevent</span> <span class="kn">import</span> <span class="n">monkey</span>
+<span class="lineno"> 6</span> <span class="kn">from</span> <span class="nn">socketio</span> <span class="kn">import</span> <span class="n">SocketIOServer</span>
+<span class="lineno"> 7</span> <span class="kn">import</span> <span class="nn">django.core.handlers.wsgi</span>
+<span class="lineno"> 8</span> <span class="kn">import</span> <span class="nn">os</span><span class="o">,</span> <span class="nn">sys</span><span class="o">,</span> <span class="nn">settings</span>
+<span class="lineno"> 9</span> 
+<span class="lineno">10</span> <span class="c"># use gevent to patch the standard lib to get async support</span>
+<span class="lineno">11</span> <span class="n">monkey</span><span class="o">.</span><span class="n">patch_all</span><span class="p">()</span>
+<span class="lineno">12</span> 
+<span class="lineno">13</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s">&#39;DJANGO_SETTINGS_MODULE&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;settings&#39;</span>
+<span class="lineno">14</span> <span class="n">app</span> <span class="o">=</span> <span class="n">django</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">handlers</span><span class="o">.</span><span class="n">wsgi</span><span class="o">.</span><span class="n">WSGIHandler</span><span class="p">()</span>
+<span class="lineno">15</span> <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">settings</span><span class="o">.</span><span class="n">PROJECT_PATH</span><span class="p">,</span> <span class="s">&#39;../&#39;</span><span class="p">))</span>
+<span class="lineno">16</span> <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">settings</span><span class="o">.</span><span class="n">PROJECT_PATH</span><span class="p">,</span> <span class="s">&#39;apps&#39;</span><span class="p">))</span>
+<span class="lineno">17</span> 
+<span class="lineno">18</span> <span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+<span class="lineno">19</span>     <span class="n">SocketIOServer</span><span class="p">((</span><span class="s">&#39;&#39;</span><span class="p">,</span> <span class="mi">7777</span><span class="p">),</span> <span class="n">app</span><span class="p">,</span> <span class="n">resource</span><span class="o">=</span><span class="s">&#39;socket.io&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">server_forever</span><span class="p">()</span>
+</pre></div>
+</section>
+          
+        </div>
+        <footer>
+          
+          <aside class="source">
+            Source: <a href="file:///Users/majortom/pysoflo/jun.10.2011-doitlive/slides.md">slides.md</a>
+          </aside>
+          
+          <aside class="page_number">
+            17/20
+          </aside>
+        </footer>
+      </div>
+      
+      <!-- slide source: slides.md -->
+      <div class="slide has_code">
+        <div class="inner">
+          
+          <header><h1>Socket.io Javascript</h1></header>
+          
+          
+          <section><div class="highlight"><pre><span class="lineno"> 1</span> <span class="nt">&lt;script </span><span class="na">type=</span><span class="s">&quot;text/javascript&quot;</span> <span class="na">src=</span><span class="s">&quot;{{ MEDIA_URL }}js/socket.io.min.js&quot;</span><span class="nt">&gt;&lt;/script&gt;</span>
+<span class="lineno"> 2</span> <span class="nt">&lt;script </span><span class="na">type=</span><span class="s">&quot;text/javascript&quot;</span><span class="nt">&gt;</span>
+<span class="lineno"> 3</span>     <span class="nx">$</span><span class="p">(</span><span class="nb">document</span><span class="p">).</span><span class="nx">ready</span><span class="p">(</span><span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+<span class="lineno"> 4</span>         <span class="kd">var</span> <span class="nx">server</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">io</span><span class="p">.</span><span class="nx">Socket</span><span class="p">(</span><span class="s1">&#39;{{ HOST }}&#39;</span><span class="p">,</span> <span class="p">{{</span> <span class="nx">PORT</span> <span class="p">}});</span>
+<span class="lineno"> 5</span>         <span class="nx">server</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">&#39;connect&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+<span class="lineno"> 6</span>             <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;Connected to socket.io!!&#39;</span><span class="p">);</span>
+<span class="lineno"> 7</span>         <span class="p">});</span>
+<span class="lineno"> 8</span>         <span class="nx">server</span><span class="p">.</span><span class="nx">connect</span><span class="p">();</span>
+<span class="lineno"> 9</span>     <span class="p">});</span>
+<span class="lineno">10</span> <span class="nt">&lt;/script&gt;</span>
+</pre></div>
+</section>
+          
+        </div>
+        <footer>
+          
+          <aside class="source">
+            Source: <a href="file:///Users/majortom/pysoflo/jun.10.2011-doitlive/slides.md">slides.md</a>
+          </aside>
+          
+          <aside class="page_number">
+            18/20
+          </aside>
+        </footer>
+      </div>
+      
+      <!-- slide source: slides.md -->
+      <div class="slide">
+        <div class="inner">
+          
+          <header><h1>Socket.io Events</h1></header>
+          
+          
+          <section><ul>
+<li>connect: fired when the connection is established and the handshake successful.</li>
+<li>connecting(<code>transport_type</code>): fired with a connection is attempted, passing the transport name.</li>
+<li>connect_failed: Fired when the connection timeout occurs after the last</li>
+<li>message(<code>message</code>): fired when a message arrives</li>
+<li>close: fired when the connection is closed. Be careful with using this events, as some transports will fire it even under temp, expected disconnections (such as XHR-Polling).</li>
+<li>disconnect: fired when the connection is considered disconnected</li>
+<li>reconnect(<code>transport_type</code>, <code>reconnectionAttempts</code>): fired when a reconnection is attempted, passing the next delay for the next reconnection.</li>
+</ul></section>
+          
+        </div>
+        <footer>
+          
+          <aside class="source">
+            Source: <a href="file:///Users/majortom/pysoflo/jun.10.2011-doitlive/slides.md">slides.md</a>
+          </aside>
+          
+          <aside class="page_number">
+            19/20
+          </aside>
+        </footer>
+      </div>
+      
+      <!-- slide source: slides.md -->
+      <div class="slide">
+        <div class="inner">
+          
+          <header><h1>These things and more!</h1></header>
+          
+          
+          <section><p>This presentation has a some source online:</p>
+<ul>
+<li>http://github.com/miamiwebstaff/pysoflo</li>
+<li>http://github.com/nyxtom/</li>
+<li>http://github.com/nyxtom/saywhat</li>
+</ul></section>
+          
+        </div>
+        <footer>
+          
+          <aside class="source">
+            Source: <a href="file:///Users/majortom/pysoflo/jun.10.2011-doitlive/slides.md">slides.md</a>
+          </aside>
+          
+          <aside class="page_number">
+            20/20
+          </aside>
+        </footer>
+      </div>
+      
+    </div>
+  </div>
+  
+  <div id="toc" class="sidebar hidden">
+    <h2>Table of Contents</h2>
+    <table>
+      <caption>Table of Contents</caption>
+            
+      <tr id="toc-row-2">
+        <th><a href="#slide2">Do it live!</a></th>
+        <td><a href="#slide2">2</a></td>
+      </tr>
+      
+            
+      <tr id="toc-row-3">
+        <th><a href="#slide3">Why sites should be live?</a></th>
+        <td><a href="#slide3">3</a></td>
+      </tr>
+      
+            
+      <tr id="toc-row-4">
+        <th><a href="#slide4">Issues to run into</a></th>
+        <td><a href="#slide4">4</a></td>
+      </tr>
+      
+            
+      <tr id="toc-row-5">
+        <th><a href="#slide5">Messaging patterns</a></th>
+        <td><a href="#slide5">5</a></td>
+      </tr>
+      
+            
+      <tr id="toc-row-7">
+        <th><a href="#slide7">Redis.io</a></th>
+        <td><a href="#slide7">7</a></td>
+      </tr>
+      
+            
+      <tr id="toc-row-8">
+        <th><a href="#slide8">Redis.io String Data Structure</a></th>
+        <td><a href="#slide8">8</a></td>
+      </tr>
+      
+            
+      <tr id="toc-row-9">
+        <th><a href="#slide9">Redis.io Hashes</a></th>
+        <td><a href="#slide9">9</a></td>
+      </tr>
+      
+            
+      <tr id="toc-row-10">
+        <th><a href="#slide10">Commands for Redis.io Hashes</a></th>
+        <td><a href="#slide10">10</a></td>
+      </tr>
+      
+            
+      <tr id="toc-row-11">
+        <th><a href="#slide11"><img alt="redis" src="redis.png" /></a></th>
+        <td><a href="#slide11">11</a></td>
+      </tr>
+      
+            
+      <tr id="toc-row-12">
+        <th><a href="#slide12">Publish/Subscribe with Redis</a></th>
+        <td><a href="#slide12">12</a></td>
+      </tr>
+      
+            
+      <tr id="toc-row-13">
+        <th><a href="#slide13">Greenlets &amp; GEvent</a></th>
+        <td><a href="#slide13">13</a></td>
+      </tr>
+      
+            
+      <tr id="toc-row-14">
+        <th><a href="#slide14">Web sockets!!</a></th>
+        <td><a href="#slide14">14</a></td>
+      </tr>
+      
+            
+      <tr id="toc-row-15">
+        <th><a href="#slide15">Socket.io</a></th>
+        <td><a href="#slide15">15</a></td>
+      </tr>
+      
+            
+      <tr id="toc-row-16">
+        <th><a href="#slide16">Socket.io Browsers</a></th>
+        <td><a href="#slide16">16</a></td>
+      </tr>
+      
+            
+      <tr id="toc-row-17">
+        <th><a href="#slide17">Socket.io WSGI Server</a></th>
+        <td><a href="#slide17">17</a></td>
+      </tr>
+      
+            
+      <tr id="toc-row-18">
+        <th><a href="#slide18">Socket.io Javascript</a></th>
+        <td><a href="#slide18">18</a></td>
+      </tr>
+      
+            
+      <tr id="toc-row-19">
+        <th><a href="#slide19">Socket.io Events</a></th>
+        <td><a href="#slide19">19</a></td>
+      </tr>
+      
+            
+      <tr id="toc-row-20">
+        <th><a href="#slide20">These things and more!</a></th>
+        <td><a href="#slide20">20</a></td>
+      </tr>
+      
+      
+    </table>
+  </div>
+  
+  <div id="help" class="sidebar hidden">
+    <h2>Help</h2>
+    <table>
+      <caption>Help</caption>
+      <tr>
+        <th>Table of Contents</th>
+        <td>t</td>
+      </tr>
+      <tr>
+        <th>Source Files</th>
+        <td>s</td>
+      </tr>
+      <tr>
+        <th>Slide Numbers</th>
+        <td>n</td>
+      </tr>
+      <tr>
+        <th>Notes</th>
+        <td>2</td>
+      </tr>
+      <tr>
+        <th>Help</th>
+        <td>h</td>
+      </tr>
+    </table>
+  </div>
+  <script>main()</script>
+</body>
+</html>
