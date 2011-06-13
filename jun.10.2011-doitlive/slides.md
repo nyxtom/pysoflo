@@ -9,12 +9,6 @@ Introduction to Redis, Socket.io, Gevent and Django
 
 ---
 
-Do it live!
-===========
-
-<iframe width="750" height="550" src="http://www.youtube.com/embed/5j2YDq6FkVE" frameborder="0" allowfullscreen></iframe>
-
----
 
 Why sites should be live?
 ========================
@@ -178,17 +172,6 @@ to replace the event loop found in event-driven network servers.
 
 ---
 
-Web sockets!!
-====================================
-
-.notes: remember how excited you were when you heard about websockets?
-
-![koolaid](koolaid.jpg)
-
-- Case in point... shit breaks for people who don't have it supported
-
-
----
 
 Socket.io
 =========
